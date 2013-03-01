@@ -7,12 +7,17 @@
 #define F_CPU 32000000UL
 #define PC_USART USARTC0
 #define	IMU_USART USARTE0
+#define NUM_BYTES_IN_FRAME 16
+#define START_FRAME_TOKEN	0x24
+#define END_FRAME_TOKEN 0x0D
+#define COMMA 0x2C
 
 void init32MHzClock(void);
 uint8_t get_USART_char(void);
 void put_USART_char(uint8_t);
-/*! Success variable, used to test driver. */
 
+uint8_t pitch,roll,yaw;
+uint8_t frame[NUM_BYTES_IN_FRAME];
 
 int main(void)
 {
@@ -50,8 +55,14 @@ int main(void)
 	while(1) 
 	{
 	
-		sendData = get_USART_char();
-		put_USART_char(sendData);
+		while ((sendData = get_USART_char()) == 0x24)  {;}
+		while ((sendData = get_USART_char()) != 0x0D)  
+		{
+			
+			put_USART_char(sendData);
+		}
+	
+		
 
 	}
 
