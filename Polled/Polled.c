@@ -1,31 +1,44 @@
 #include <avr/io.h>
+#include <stdlib.h> 
 #include "usart_driver.h"
 #include "avr_compiler.h"
-#include <stdlib.h> 
+#include "tc_driver.h"
+#include "myUtilities.h"
+#include "PWM.h"
 
 
-/*! Define that selects the Usart used in example. */
+/*! Define that selects the UASRT used in example. */
 #define F_CPU 32000000UL
 //#define PC_USART USARTC0
 #define	IMU_USART USARTE0
 #define START_FRAME_TOKEN	0x24
 #define END_FRAME_TOKEN		0x0D
 #define COMMA				0x2C
+#define MASK_TOP_BYTE		0x00FF
+
+#define NUM_BYTES_IN_ANGLE	4
+#define NUM_BYTES_IN_FRAME 32
 
 
 //void  init_2_and32Mhz_clocks(void);
 void init32MHzClock(void);
 uint8_t get_USART_char(void);
 void put_USART_char(uint8_t);
+void initPWM(void);
+void doPWM(uint16_t);
+void sendData_uint16_t(void);
+void sendFrame_ASCII(void);
 
-char strYaw[4]; 
-char strPitch[4];
-char strRoll[4];
-
+char frame[NUM_BYTES_IN_FRAME];
+char strYaw[NUM_BYTES_IN_ANGLE]; char strPitch[NUM_BYTES_IN_ANGLE]; char strRoll[NUM_BYTES_IN_ANGLE];
+uint16_t pitch,roll,yaw;
+int16_t pwm_delta = 250;
 
 int main(void)
 {
+	initPWM();
 	init32MHzClock();
+	
 	//init_2_and32Mhz_clocks();
 	/* Variable used to send and receive data. */
 	
@@ -54,54 +67,98 @@ int main(void)
 
 
 	char sendData;
-	uint16_t pitch,roll,yaw;
+	
 	char *p;
 	sendData = 0;
-	uint8_t i = 0;
-	
+	uint8_t i,k = 0;
+
+
 	while(1) 
 	{
 		while (get_USART_char() != START_FRAME_TOKEN)  {;}			
+		frame[k++] = START_FRAME_TOKEN;
 		
 		while ((sendData = get_USART_char()) != COMMA)
 		{
-			strYaw[i] = sendData;
-			i++;
-		}	
-		strYaw[i+1] = '\0';							// add termination character
-		yaw = strtoul(&strYaw[0],&p,0);
+			strYaw[i++] = sendData;
+			frame[k++] = sendData;
+		}
+		frame[k++] = COMMA;  	
+		strYaw[i+1] = '\0';											// add termination character
+		//yaw = strtol(&strYaw[0],&p,0);							// convert string of char to unint16_t
+		yaw = strtoUINT16(&strYaw[0],&p,0);
 		i=0;
 		
 		while ((sendData = get_USART_char()) != COMMA)  
 		{
 		
-			strPitch[i] = sendData;
-			i++;
+			strPitch[i++] = sendData;
+			frame[k++] = sendData;
 		}
-		strPitch[i+1] = '\0';						// add termination character
-		pitch = strtoul(strPitch, &p, 10);
+		frame[k++] = COMMA;  	
+		strPitch[i+1] = '\0';										// add termination character
+		//pitch = my_atoi(strPitch);						// signed long is 32 bits
 		i = 0;
 		
 		while ((sendData = get_USART_char()) != END_FRAME_TOKEN)  
 		{
 			
-			strRoll[i] = sendData;
-			i++;
-		
+			strRoll[i++] = sendData;
+			frame[k++] = sendData;
 		}
-		strRoll[i+1] = '\0';						// add termination character
-		roll = strtoul(strRoll, &p, 10);
-		i = 0;
-	
-	}
+		frame[k++] = END_FRAME_TOKEN;
+		strRoll[i+1] = '\0';										// add termination character
+		//roll = my_atoi(strRoll);
+		i = 0;	k = 0;
 
+		
+	doPWM(yaw);
+	sendFrame_ASCII();
+	//sendData_uint16_t();
+	}
+	
+	
 }
+
+// operate on global variables, split 
+//void sendData_uint16_t(uint16_t *pYaw, uint16_t *pPitch, uint16_t *pRoll)
+void sendData_uint16_t()
+{
+	char highbyte, lowbyte;
+	
+	highbyte = (yaw >> 8) & MASK_TOP_BYTE;
+	lowbyte = yaw & MASK_TOP_BYTE;
+	put_USART_char(highbyte);
+	put_USART_char(lowbyte);
+
+	//highbyte = (pitch >> 8) & MASK_TOP_BYTE;
+	//lowbyte = pitch & MASK_TOP_BYTE;
+	//put_USART_char(highbyte);
+	//put_USART_char(lowbyte);		
+
+	//highbyte = (roll >> 8) & MASK_TOP_BYTE;
+	//lowbyte = roll & MASK_TOP_BYTE;
+	//put_USART_char(highbyte);
+	//put_USART_char(lowbyte);
+	
+}
+
+
+void sendFrame_ASCII()
+{
+	int n = 0;
+	while(frame[n] != END_FRAME_TOKEN)
+	{
+		put_USART_char(frame[n]);
+		n++;
+	}
+	
+}
+
 
 uint8_t get_USART_char()
 {
 	do{
-	
-	
 	}while(!USART_IsRXComplete(&IMU_USART));
 	return USART_GetChar(&IMU_USART);
 }
@@ -116,16 +173,6 @@ void put_USART_char(uint8_t sendThis)
 		USART_PutChar(&IMU_USART, sendThis);
 }
 
-
-int myATOL(const char *string)
-{
-	int i;
-	while (*string)
-	{
-		i = (i<<3) + (i<< 1) +(*string-'\0');
-	}
-	return i;
-}
 void init32MHzClock(void)
 {
 
@@ -145,19 +192,9 @@ void init32MHzClock(void)
 	
 }
 
-//void init_2_and32Mhz_clocks()
-//{
-	   //OSC.CTRL |= OSC_RC32MEN_bm | OSC_RC2MEN_bm | OSC_RC32KEN_bm;
-   //while((OSC.STATUS & OSC_RC32MRDY_bm)==0){} // wait until stable
-   //while((OSC.STATUS & OSC_RC2MRDY_bm)==0){} // wait until stable 
-   //while((OSC.STATUS & OSC_RC32KRDY_bm)==0){} // wait until stable 
-//
-   //// enable DFLL (on both RC clocks) 
-   //DFLLRC32M.CTRL = DFLL_ENABLE_bm ; 
-   //DFLLRC2M.CTRL = DFLL_ENABLE_bm ; 
-//
-   //// And now switch to the 32M as a clocksource. 
-   //CCP = CCP_IOREG_gc;            // protected write follows    
-   //CLK.CTRL = CLK_SCLKSEL_RC32M_gc;   // The System clock is now the 32Mhz internal RC 
-//}
-//
+
+
+
+
+
+

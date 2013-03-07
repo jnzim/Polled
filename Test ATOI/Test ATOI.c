@@ -51,7 +51,7 @@ int main(void)
 	uint8_t i = 0;
 	while(1) 
 	{
-		char *p, *s;
+		char *p;
 		long li;
 		char myData[10] = {'1', '2', '3'};
 		s = "20y";
@@ -91,16 +91,7 @@ void put_USART_char(uint8_t sendThis)
 		USART_PutChar(&IMU_USART, sendThis);
 }
 
-
-int myATOL(const char *string)
-{
-	int i;
-	while (*string)
-	{
-		i = (i<<3) + (i<< 1) +(*string-'\0');
-	}
-	return i;
-}
+\
 void init32MHzClock(void)
 {
 

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Atmel Studio Solution File, Format Version 11.00
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "Polled", "Polled\Polled.cproj", "{E68C28CE-2151-43C4-9670-0076B21B0F15}"
 EndProject
-Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "Test ATOI", "Test ATOI\Test ATOI.cproj", "{694CC431-D410-4D60-9270-6AB4B7AA2AC3}"
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "PWM", "PWM\PWM.cproj", "{1C36835A-E0E3-4478-BD3B-8707CAFB11EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,10 @@ Global
 		{E68C28CE-2151-43C4-9670-0076B21B0F15}.Debug|AVR.Build.0 = Debug|AVR
 		{E68C28CE-2151-43C4-9670-0076B21B0F15}.Release|AVR.ActiveCfg = Release|AVR
 		{E68C28CE-2151-43C4-9670-0076B21B0F15}.Release|AVR.Build.0 = Release|AVR
-		{694CC431-D410-4D60-9270-6AB4B7AA2AC3}.Debug|AVR.ActiveCfg = Debug|AVR
-		{694CC431-D410-4D60-9270-6AB4B7AA2AC3}.Debug|AVR.Build.0 = Debug|AVR
-		{694CC431-D410-4D60-9270-6AB4B7AA2AC3}.Release|AVR.ActiveCfg = Release|AVR
-		{694CC431-D410-4D60-9270-6AB4B7AA2AC3}.Release|AVR.Build.0 = Release|AVR
+		{1C36835A-E0E3-4478-BD3B-8707CAFB11EA}.Debug|AVR.ActiveCfg = Debug|AVR
+		{1C36835A-E0E3-4478-BD3B-8707CAFB11EA}.Debug|AVR.Build.0 = Debug|AVR
+		{1C36835A-E0E3-4478-BD3B-8707CAFB11EA}.Release|AVR.ActiveCfg = Release|AVR
+		{1C36835A-E0E3-4478-BD3B-8707CAFB11EA}.Release|AVR.Build.0 = Release|AVR
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
