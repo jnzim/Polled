@@ -84,9 +84,9 @@ int main(void)
 			frame[k++] = sendData;
 		}
 		frame[k++] = COMMA;  	
-		strYaw[i+1] = '\0';		
-		//yaw = strtoul(&strYaw[0],NULL,10);									// add termination character
-		yaw = atoi(&strYaw[0]);							// convert string of char to unint16_t
+		strYaw[i++] = '\0';		
+		yaw = strtoUint16(&strYaw[0],NULL,10);									// add termination character
+																				// convert string of char to unint16_t
 		i=0;
 		
 		while ((sendData = get_USART_char()) != COMMA)  
@@ -96,9 +96,9 @@ int main(void)
 			frame[k++] = sendData;
 		}
 		frame[k++] = COMMA;  	
-		strPitch[i+1] = '\0';
-		//pitch = strtoul(&strPitch[0],NULL,10);										// add termination character
-		pitch = atoi(&strPitch[0]);									// signed long is 32 bits
+		strPitch[i++] = '\0';
+		pitch = strtoUint16(&strPitch[0],NULL,10);										// add termination character
+																						// signed long is 32 bits
 		i = 0;
 		
 		while ((sendData = get_USART_char()) != END_FRAME_TOKEN)  
@@ -108,10 +108,10 @@ int main(void)
 			frame[k++] = sendData;
 		}
 		frame[k++] = END_FRAME_TOKEN;
-		strRoll[i+1] = '\0';										// add termination character
-		//roll = atoi(&strRoll[0]);
+		strRoll[i++] = '\0';										// add termination character
 		
-		roll = strtoul(&strRoll[0],NULL,10);
+		
+		roll = strtoUint16(&strRoll[0],NULL,10);
 		i = 0;	k = 0;
 
 		
@@ -129,11 +129,11 @@ void sendData_uint16_t()
 {
 	char highbyte, lowbyte;
 	
-	highbyte = (yaw >> 8) & MASK_TOP_BYTE;
-	lowbyte = yaw & 0xFF; 
-	put_USART_char(highbyte);
-	put_USART_char(lowbyte);
-
+	//highbyte =  (yaw >> 8) & MASK_TOP_BYTE;
+	//lowbyte = yaw & MASK_TOP_BYTE;
+	//put_USART_char(highbyte);
+	//put_USART_char(lowbyte);
+	//
 	highbyte = (pitch >> 8) & MASK_TOP_BYTE;
 	lowbyte = pitch & MASK_TOP_BYTE;
 	put_USART_char(highbyte);
@@ -143,7 +143,7 @@ void sendData_uint16_t()
 	//lowbyte = roll & MASK_TOP_BYTE;
 	//put_USART_char(highbyte);
 	//put_USART_char(lowbyte);
-	
+	//
 }
 
 
