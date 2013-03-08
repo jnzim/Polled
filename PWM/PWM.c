@@ -97,3 +97,43 @@ int main( void )
         }
 	}
 }
+
+
+void Example4( void )
+{
+	uint16_t compareValue = 0x0000;
+
+	/* Enable output on PC0. */
+	LEDPORT.DIR = PIN0_bm;
+
+	/* Set the TC period. */
+	TC_SetPeriod( &LEDPORT_TIMER0, 0xFFFF );
+
+	/* Configure the TC for single slope mode. */
+	TC0_ConfigWGM( &LEDPORT_TIMER0, TC_WGMODE_SS_gc );
+
+	/* Enable Compare channel A. */
+	TC0_EnableCCChannels( &LEDPORT_TIMER0, TC0_CCAEN_bm );
+
+	/* Start timer by selecting a clock source. */
+	TC0_ConfigClockSource( &LEDPORT_TIMER0, TC_CLKSEL_DIV1_gc );
+
+	do {
+		/* Calculate new compare value. */
+		compareValue += 32;
+
+		/* Output new compare value. */
+		TC_SetCompareA( &LEDPORT_TIMER0, compareValue );
+
+		do {
+			/*  Wait for the new compare value to be latched
+			 *  from CCABUF[H:L] to CCA[H:L]. This happens at
+			 *  TC overflow (UPDATE ).
+			 */
+		} while( TC_GetOverflowFlag( &LEDPORT_TIMER0 ) == 0 );
+
+		/* Clear overflow flag. */
+		TC_ClearOverflowFlag( &LEDPORT_TIMER0 );
+
+	} while (1);
+}
